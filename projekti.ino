@@ -1,26 +1,24 @@
-#include <LiquidCrystal.h>
 #include <SD.h>
 #include <SPI.h>
 #include <PN532_SPI.h>
 #include "PN532.h"
+#include <LiquidCrystal.h>
 
-// For NFC-module to work:
-PN532_SPI pn532spi(SPI, 10);
-PN532 nfc(pn532spi);
-
-// For SD-module to work:
 Sd2Card card;
 SdVolume volume;
 SdFile root;
+File myFile;
 
-// For LDC-display to work:
+PN532_SPI pn532spi(SPI, 10);
+PN532 nfc(pn532spi);
+
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
-int col = 0;
-int row = 0;
+int COL = 0;
+int ROW = 0;
 
-// For keypad to work:
-//2-dimensional array for asigning the buttons and there high and low values
-int Button[12][3] = {{1, 770, 845},      // button 1
+char* STRING;
+int STRINGSIZE = 0;
+int BUTTON[12][3] = {{1, 770, 845},      // button 1
                      {2, 440, 470},      // button 2
                      {3, 101, 145},      // button 3
                      {4, 690, 750},      // button 4
@@ -32,15 +30,16 @@ int Button[12][3] = {{1, 770, 845},      // button 1
                      {10, 550, 630},     // enter
                      {11, 146, 190},     // button 0
                      {12, 900, 1023}};   // cancel
-int analogpin = A5;       // analog pin to read the buttons
-int label = 0;            // for reporting the button label
-int counter = 0;          // how many times we have seen new value
-long time = 0;            // the last time the output pin was sampled
-int debounce_count = 150; // number of millis/samples to consider before declaring a debounced input
-int current_state = 0;    // the debounced input value
-int ButtonVal;
+int ANALOGPIN = A5;       // analog pin to read the buttons
+int LABEL = 0;            // for reporting the button label
+int COUNTER = 0;          // how many times we have seen new value
+long TIME = 0;            // the last time the output pin was sampled
+int DEBOUNCE_COUNT = 150; // number of millis/samples to consider before declaring a debounced input
+int CURRENT_STATE = 0;    // the debounced input value
+int BUTTONVAL;
+boolean dot = false;
+long TIMER = 0;
 
-  
 void setup(void)
 {
   Serial.begin(9600);
@@ -53,49 +52,55 @@ void setup(void)
   digitalWrite(7,HIGH);
   analogWrite(8,90);   // Contrast
   lcd.begin(16,4);
-  
-  // NFC listens MASTER
-  digitalWrite(10,LOW);
-  digitalWrite(A1,HIGH);
-  
-  // setup for NFC-module
-  nfc.begin();
-  nfc.setPassiveActivationRetries(0xFF); // Set the max number of retry attempts to read from a card
-  nfc.SAMConfig();                       // configure board to read RFID tags
-  
-  // SD listens MASTER
-  digitalWrite(10,HIGH);
-  digitalWrite(A1,LOW);
-  
-  // setup for SD-module
-  SD.begin(A1);
 }
 
 void loop(void)
 {
-  boolean success;
-  uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
-  uint8_t uidLength;  // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
-  lcd.setCursor(0,0);
-  lcd.print("Hello!");
-  lcd.setCursor(0,1);
-  lcd.print("Read card!");  
-  // Wait for an ISO14443A type cards (Mifare, etc.).  When one is found
-  // 'uid' will be populated with the UID, and uidLength will indicate
-  // if the uid is 4 bytes (Mifare Classic) or 7 bytes (Mifare Ultralight)
-  success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, &uid[0], &uidLength);
+  printString("Hello!");
+  setCursor(0,1);
+  printString("Please identify yourself with   a tag");
+
+  startNFC();
+  char* tag = getTag();    
   
-  if (success) {
+  if(tag[0] != '\0')
+  {
     lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("UID Value: ");
-    lcd.setCursor(0,1);
-    for (uint8_t i=0; i < uidLength; i++) 
-    {
-      lcd.print(uid[i]); 
-    }
-    // Wait 1 second before continuing
+    setCursor(0,0);
+    printString("Tag accepted!");
+    startSD();
+    testWrite(tag);
     delay(1000);
-    lcd.clear();
   }
 }
+
+void startSD()
+{
+  digitalWrite(10,HIGH);
+  digitalWrite(A1,LOW);
+  SD.begin(A1);
+}
+
+void testWrite(char* tag)
+{
+  myFile = SD.open("test.txt", FILE_WRITE);
+  if (myFile)
+  {
+    myFile.println(tag);
+    lcd.clear();
+    setCursor(0,0);
+    printString("Insert amout:");
+    setCursor(0,1);
+    while(LABEL != 10)
+    {
+      keypad();
+    }
+    myFile.println(STRING);
+    myFile.close();
+    lcd.clear();
+    setCursor(0,0);
+    printString("Pleasure to     make business   with you!");
+  }
+}
+
+
