@@ -172,11 +172,13 @@ void Action()
   if(label == 10)
   {
     Serial.println("ENTER");
-    char enter[] = "ENTER";
-    for (int i = 0; i++; i<5)
+    char enter[]="ENTER";
+    int i = 0;
+    while (i<5)
     {
-        lcd.print(enter[i]);
-        moveCursorForward();
+      lcd.print(enter[i]);
+      moveCursorForward();
+      i++;
     }
   }
   if(label == 11)
@@ -190,7 +192,7 @@ void Action()
     Serial.println("CANCEL");
     moveCursorBackward();
     lcd.print(" ");
-    moveCursorBackward();
+    lcd.setCursor(col,row);
   }
   if(label == 13)
   {
@@ -198,6 +200,7 @@ void Action()
     moveCursorBackward();
     lcd.print(",");
     dot = false;
+    moveCursorForward();
   }
 }
 
@@ -225,12 +228,12 @@ void moveCursorForward()
 void moveCursorBackward()
 {
   col--;
-  if (col < 0 && row == 3)
+  if (col < -4 && row == 3)
   {
     row--;
     col = 11;
   }
-  if ((col < -4 && row == 2) && (col < 0 && row == 1))
+  if ((col < -4 && row == 2) || (col < 0 && row == 1))
   {
     row--;
     col = 15;
