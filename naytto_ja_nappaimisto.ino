@@ -172,7 +172,7 @@ void Action()
   if(label == 10)
   {
     Serial.println("ENTER");
-    char enter[] = {"ENTER"};
+    char enter[] = "ENTER";
     for (int i = 0; i++; i<5)
     {
         lcd.print(enter[i]);
