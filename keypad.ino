@@ -7,10 +7,6 @@ void keypad()
     // check analog pin for the BUTTON value and save it to BUTTONVAL
     BUTTONVAL = analogRead(ANALOGPIN);
     
-    // for calibration
-    //Serial.println(BUTTONVAL);
-    //delay(1000);
-    
     if(BUTTONVAL == CURRENT_STATE && COUNTER >0)
     { 
       COUNTER--;
@@ -30,6 +26,7 @@ void keypad()
         ButtonCheck();
       }
     }
+    //Serial.println(BUTTONVAL);
   }
 }
 
@@ -43,6 +40,7 @@ void ButtonCheck()
     {
       // stores the BUTTON number to a variable
       LABEL = BUTTON[i][0];
+      Serial.println("button valittu");
       if (TIME > TIMER + 500 || LABEL != 1)
         dot = false;
       if (dot)
