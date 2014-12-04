@@ -3,25 +3,34 @@ void startNFC()
   digitalWrite(10,LOW);
   digitalWrite(A1,HIGH);
   nfc.begin();
-  nfc.setPassiveActivationRetries(0xFF); // Set the max number of retry attempts to read from a card
-  nfc.SAMConfig();                       // configure board to read RFID tags
 }
 
 char* getTag()
 {
-  boolean success;
-  uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
-  uint8_t uidLength;  // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
-  success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, &uid[0], &uidLength);
-  if(success)
+  if (nfc.tagPresent())
   {
-    char* tag = (char*)malloc(sizeof(char) * uidLength);
-    for (uint8_t i=0; i < uidLength; i++) 
-    {
-      tag[i] = uid[i];
-    }
-    tag[uidLength] = '\0';
-    return tag;
+    NfcTag tag = nfc.read();
+    String str = tag.getUidString();
+    char* tmp = (char*)malloc(sizeof(char)*(str.length()+1));
+    str.toCharArray(tmp, str.length()+1);
+    tmp = deblank(tmp); // remove spaces
+    Serial.println(str);
+    
+    return tmp;
   }
-  return '\0';
+  return "";
+}
+char* deblank(char* input)                                         
+{
+    int i,j;
+    char *output=input;
+    for (i = 0, j = 0; i<strlen(input); i++,j++)          
+    {
+        if (input[i]!=' ')                           
+            output[j]=input[i];                     
+        else
+            j--;                                     
+    }
+    output[j]=0;
+    return output;
 }
