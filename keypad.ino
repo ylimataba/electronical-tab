@@ -40,18 +40,20 @@ void ButtonCheck()
     {
       // stores the BUTTON number to a variable
       LABEL = BUTTON[i][0];
-      Serial.println("button valittu");
       if (TIME > TIMER + 500 || LABEL != 1)
         dot = false;
       if (dot)
         LABEL = 13;
       Action();
+      break; // poistuu for silmukasta luettuaan näppäimen!
     }
   }
 }
 
 void Action()
 {
+  Serial.print("label: ");
+  Serial.println(LABEL);
   if(LABEL == 1)
   {
     TIMER = TIME;
@@ -111,7 +113,9 @@ void Action()
   if(LABEL == 10)
   {
     Serial.println("ENTER");
+    setCursor(0,3);
     printString("ENTER");
+    delay(200);
   }
   if(LABEL == 11)
   {
@@ -122,8 +126,17 @@ void Action()
   if(LABEL == 12)
   {
     Serial.println("CANCEL");
+    lcd.setCursor(5,3);
+    lcd.print("CANCEL");
+    delay(200);
+    lcd.setCursor(5,3);
+    lcd.print("      ");
     deleteChar();
+    if (ROW==0)
+      setCursor(0, 1);
     STRINGSIZE--;
+    if (STRINGSIZE < 0)
+      STRINGSIZE = 0;
     STRING[STRINGSIZE] = '\0';
   }
   if(LABEL == 13)
