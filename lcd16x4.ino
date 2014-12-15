@@ -16,6 +16,23 @@ void printString(const char *string)
   }
 }
 
+void printStringE(const char *string)
+{
+  int tmp = 0;
+  while(string[tmp] != '\0')
+    tmp++;
+  for (int i = 0; string[i] != '\0'; i++)
+  {
+    if(i == tmp - 2)
+    {
+      lcd.print(",");
+      nextCol();
+    }
+    lcd.print(string[i]);
+    nextCol();
+  }
+}
+
 void deleteChar()
 {
   COL--;
