@@ -1,12 +1,8 @@
-void startNFC()
+char* getTag()
 {
   digitalWrite(10,LOW);
   digitalWrite(A1,HIGH);
   nfc.begin();
-}
-
-char* getTag()
-{
   if (nfc.tagPresent())
   {
     NfcTag tag = nfc.read();
@@ -15,11 +11,11 @@ char* getTag()
     str.toCharArray(tmp, str.length()+1);
     tmp = deblank(tmp); // remove spaces
     Serial.println(str);
-    
     return tmp;
   }
   return "";
 }
+
 char* deblank(char* input)                                         
 {
     int i,j;
